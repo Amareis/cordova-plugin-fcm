@@ -200,9 +200,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
     // Short-circuit when actually running iOS 10+, let notification centre methods handle the notification.
-    if (NSFoundationVersionNumber >= NSFoundationVersionNumber_iOS_9_x_Max) {
-        return;
-    }
+    //if (NSFoundationVersionNumber >= NSFoundationVersionNumber_iOS_9_x_Max) {
+    //    return;
+    //}
 
     // If you are receiving a notification message while your app is in the background,
     // this callback will not be fired till the user taps on the notification launching the application.
@@ -223,19 +223,19 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
     //                              foreground (user taps notification)
 
     UIApplicationState state = application.applicationState;
-    if (application.applicationState == UIApplicationStateActive
-        || application.applicationState == UIApplicationStateInactive) {
-        [userInfoMutable setValue:@(NO) forKey:@"wasTapped"];
-        NSLog(@"app active");
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:userInfoMutable
-                                                           options:0
-                                                             error:&error];
-        [FCMPlugin.fcmPlugin notifyOfMessage:jsonData];
+    [userInfoMutable setValue:@((BOOL)(state == UIApplicationStateInactive)) forKey:@"wasTapped"];
+    [userInfoMutable setValue:@((BOOL)(state == UIApplicationStateBackground)) forKey:@"needDownload"];
+    NSLog(@"notification arrived");
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:userInfoMutable
+                                                       options:0
+                                                         error:&error];
+    [FCMPlugin.fcmPlugin notifyOfMessage:jsonData];
 
-    // app is in background
-    }
-
-    completionHandler(UIBackgroundFetchResultNoData);
+    dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * 15.0);
+    dispatch_after(delay, dispatch_get_main_queue(), ^(void){
+        NSLog(@"Fetch time is gone!");
+        completionHandler(UIBackgroundFetchResultNoData);
+    });
 }
 // [END receive_message iOS < 10]
 // [END message_handling]
