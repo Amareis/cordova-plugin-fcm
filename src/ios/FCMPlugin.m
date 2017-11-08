@@ -92,7 +92,7 @@ static FCMPlugin *fcmPluginInstance;
 - (void) kill:(CDVInvokedUrlCommand *)command
 {
     NSLog(@"kill fcm!");
-    [FIRInstanceID.instanceID deleteIDWithHandler:^{
+    [FIRInstanceID.instanceID deleteIDWithHandler:^(NSError* error){
         CDVPluginResult* pluginResult = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
